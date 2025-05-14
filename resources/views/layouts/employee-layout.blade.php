@@ -71,30 +71,6 @@
       width: 20px;
       text-align: center;
     }
-    .sidebar .log-out {
-      margin-top: auto;
-      font-size: 1rem;
-      color: #ffffff;
-      background-color: #2F356D;
-      padding: 10px 15px;
-      border-radius: 8px;
-      width: 100%;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-    }
-    .sidebar .log-out:hover {
-      background-color: #1a1f4b;
-      text-decoration: none;
-      color: #ffffff;
-    }
-    .sidebar .log-out i {
-      margin-right: 8px;
-    }
     .main-content {
       flex: 1;
       padding: 20px;
@@ -109,6 +85,9 @@
     <div class="sidebar">
       <img src="{{ asset('img/1ds-removebg-preview.png') }}" alt="Company Logo">
       <nav class="nav flex-column">
+        <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+          <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
         <a class="nav-link {{ request()->routeIs('transactions.index') ? 'active' : '' }}" href="{{ route('transactions.index') }}">
           <i class="fas fa-receipt"></i> Order/Transaction
         </a>
@@ -131,9 +110,6 @@
           <i class="fas fa-clipboard-check"></i> Receive Order
         </a>
       </nav>
-      <a href="{{ route('dashboard') }}" class="log-out">
-        <i class="fas fa-sign-out-alt"></i> Log Out
-      </a>
     </div>
     <div class="main-content">
       @yield('content')

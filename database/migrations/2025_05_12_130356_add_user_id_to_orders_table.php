@@ -11,10 +11,10 @@ return new class extends Migration
      */
    public function up()
 {
-    Schema::table('orders', function (Blueprint $table) {
-        $table->unsignedBigInteger('user_id')->after('is_archived');
-        $table->foreign('user_id')->references('id')->on('users');
-    });
+   Schema::table('orders', function (Blueprint $table) {
+    $table->unsignedBigInteger('user_id')->nullable()->after('id'); // Add nullable first
+    $table->foreign('user_id')->references('id')->on('users');
+});
 }
 
 public function down()

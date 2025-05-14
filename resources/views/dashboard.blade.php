@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+
 <div class="dashboard-container" id="dashboardContainer">
     <div class="bubbles" id="bubblesContainer"></div>
 

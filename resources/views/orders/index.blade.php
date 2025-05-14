@@ -6,6 +6,27 @@
 <div class="container-fluid">
     <div class="page-title">Order Management</div>
     
+    <!-- Search Box -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by Order ID or Customer Name..." 
+                       value="{{ request('search') }}">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="button" onclick="performSearch()">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    @if(request('search'))
+                    <button class="btn btn-secondary" type="button" onclick="clearSearch()">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Order Cards -->
     <div class="order-cards-container">
         @foreach ($activeOrders as $order)
         <div class="order-card">
@@ -82,6 +103,38 @@
         @endforeach
     </div>
 
+    <!-- Pagination -->
+  @if($activeOrders->hasPages())
+<div class="pagination-container">
+    <div class="pagination-info">
+        Showing {{ $activeOrders->firstItem() }} to {{ $activeOrders->lastItem() }} of {{ $activeOrders->total() }} results
+    </div>
+    <div class="pagination-controls">
+        @if ($activeOrders->onFirstPage())
+            <span class="page-link disabled">&laquo;</span>
+        @else
+            <a href="{{ $activeOrders->previousPageUrl() }}" class="page-link">&laquo;</a>
+        @endif
+
+        @foreach ($activeOrders->getUrlRange(1, $activeOrders->lastPage()) as $page => $url)
+            @if ($page == $activeOrders->currentPage())
+                <span class="page-link active">{{ $page }}</span>
+            @else
+                <a href="{{ $url }}" class="page-link">{{ $page }}</a>
+            @endif
+        @endforeach
+
+        @if ($activeOrders->hasMorePages())
+            <a href="{{ $activeOrders->nextPageUrl() }}" class="page-link">&raquo;</a>
+        @else
+            <span class="page-link disabled">&raquo;</span>
+        @endif
+    </div>
+</div>
+@endif
+
+
+    <!-- Archived Orders Section -->
     <div class="mt-5">
         <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#archivedOrders">
             <i class="fas fa-archive"></i> Show Archived Orders ({{ $archivedOrders->count() }})
@@ -144,6 +197,7 @@
     </div>
 </div>
 
+<!-- Order Details Modal -->
 <div class="modal fade" id="orderDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -388,6 +442,57 @@
         border: 1px solid #ddd;
         margin-top: 10px;
     }
+    .pagination-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 20px 0;
+        font-size: 14px;
+    }
+
+    .pagination-info {
+        margin-bottom: 8px;
+        color: #666;
+    }
+
+    .pagination-controls {
+        display: flex;
+        gap: 5px;
+    }
+
+    .page-link {
+        padding: 5px 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #079CD6;
+        transition: all 0.2s;
+    }
+
+    .page-link:hover:not(.disabled):not(.active) {
+        background-color: #f5f5f5;
+    }
+
+    .page-link.active {
+        background-color: #079CD6;
+        color: white;
+        border-color: #079CD6;
+    }
+
+    .page-link.disabled {
+        color: #999;
+        cursor: not-allowed;
+    }
+    
+    #searchInput {
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        padding: 10px 15px;
+    }
+    
+    .input-group-append .btn {
+        border-radius: 0 8px 8px 0;
+    }
     
     @media (max-width: 768px) {
         .order-cards-container {
@@ -587,5 +692,33 @@
     function printReceipt() {
         alert('Receipt printing functionality would be implemented here');
     }
+     function performSearch() {
+        const searchTerm = document.getElementById('searchInput').value.trim();
+        const url = new URL(window.location.href);
+        
+        if (searchTerm) {
+            url.searchParams.set('search', searchTerm);
+        } else {
+            url.searchParams.delete('search');
+        }
+        
+        // Reset to first page when searching
+        url.searchParams.delete('page');
+        window.location.href = url.toString();
+    }
+    
+    function clearSearch() {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('search');
+        url.searchParams.delete('page');
+        window.location.href = url.toString();
+    }
+    
+    // Handle Enter key in search input
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
 </script>
 @endpush

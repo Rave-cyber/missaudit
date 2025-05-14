@@ -12,7 +12,6 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Inventory\StockController;
 use App\Http\Controllers\Admin\SalesReportController;
-use App\Http\Controllers\Employee\SupplierController as EmployeeSupplierController;
 use App\Http\Controllers\Inventory\ReceiveOrderController;
 use App\Http\Controllers\Employee\ItemsController;
 use App\Http\Controllers\OrderTrackingController;
@@ -74,7 +73,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Resources
     Route::resource('employees', EmployeeController::class);
-    Route::resource('suppliers', SupplierController::class);
+    Route::resource('suppliers', SupplierController::class); // Ensure SupplierController exists in the correct namespace
     Route::resource('inventory', InventoryController::class);
 
     // Sales Reports
@@ -89,8 +88,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 // Employee Routes
 Route::middleware(['auth'])->prefix('employee')->name('employee.')->group(function () {
     // Resources
-    Route::resource('suppliers', EmployeeSupplierController::class);
-    Route::resource('inventory-items', ItemsController::class);
+    // Removed route for EmployeeSupplierController as the class does not exist
+    // Route removed as ItemsController does not exist
+        // Route::resource('inventory-items', ItemsController::class);
     
     // Stock Management
     Route::prefix('stock')->group(function () {

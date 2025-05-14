@@ -28,9 +28,9 @@
                             <label for="address">Address</label>
                             <textarea class="form-control" id="address" name="address"></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-plus mr-1"></i> Save</button>
                         <a href="{{ route('employee.supplier.index') }}" class="btn btn-secondary btn-sm">
-                        <i class="fas fa-plus mr-1"></i> Cancel
+                        Cancel
                     </a>
                     </form>
                 </div>

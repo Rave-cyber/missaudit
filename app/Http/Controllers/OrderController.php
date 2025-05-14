@@ -9,55 +9,56 @@ use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search');
+        
         $activeOrders = Order::where('is_archived', false)
-                           ->orderBy('created_at', 'desc')
-                           ->get();
+            ->when($search, function($query) use ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('id', 'like', "%$search%")
+                      ->orWhere('order_name', 'like', "%$search%");
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(6);  // Changed from get() to paginate()
                            
         $archivedOrders = Order::where('is_archived', true)
-                             ->orderBy('updated_at', 'desc')
-                             ->get();
+            ->orderBy('updated_at', 'desc')
+            ->get();
                              
-        return view('orders.index', compact('activeOrders', 'archivedOrders'));
+        return view('orders.index', compact('activeOrders', 'archivedOrders', 'search'));
     }
 
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'order_name' => 'required|string|max:255',
-        'weight' => 'required|numeric|min:0.1',
-        'date' => 'required|date',
-        'service_type' => 'required|array',
-        'payment_method' => 'required|string',
-        'amount' => 'required|numeric',
-        'special_instructions' => 'nullable|string',
-    ]);
+    {
+        $validated = $request->validate([
+            'order_name' => 'required|string|max:255',
+            'weight' => 'required|numeric|min:0.1',
+            'date' => 'required|date',
+            'service_type' => 'required|array',
+            'payment_method' => 'required|string',
+            'amount' => 'required|numeric',
+            'special_instructions' => 'nullable|string',
+        ]);
 
-    $order = Order::create([
-        'order_name' => $validated['order_name'],
-        'weight' => $validated['weight'],
-        'date' => $validated['date'],
-        'service_type' => $validated['service_type'],
-        'status' => 'Pending',
-        'payment_method' => $validated['payment_method'],
-        'payment_status' => 'pending',
-        'amount' => $validated['amount'],
-        'special_instructions' => $validated['special_instructions'] ?? null,
-        'is_archived' => false,
-    ]);
-    
-    $order->updateStatus('Pending');
-
-    return redirect()->route('orders.index')
-        ->with('success', 'Order created successfully!');
-
-        /*$receiptContent = $this->generateReceiptContent($order);
+        $order = Order::create([
+            'order_name' => $validated['order_name'],
+            'weight' => $validated['weight'],
+            'date' => $validated['date'],
+            'service_type' => $validated['service_type'],
+            'status' => 'Pending',
+            'payment_method' => $validated['payment_method'],
+            'payment_status' => 'pending',
+            'amount' => $validated['amount'],
+            'special_instructions' => $validated['special_instructions'] ?? null,
+            'is_archived' => false,
+        ]);
         
-        $receiptFilename = 'receipt_'.$order->id.'_'.time().'.txt';
-        Storage::put('receipts/'.$receiptFilename, $receiptContent);
+        $order->updateStatus('Pending');
 
-        return Storage::download('receipts/'.$receiptFilename, 'Laundry_Receipt_'.$order->id.'.txt');*/
+        return redirect()->route('orders.index')
+            ->with('success', 'Order created successfully!');
     }
 
     public function updateStatus(Request $request, $id)
@@ -73,24 +74,22 @@ class OrderController extends Controller
     }
 
     public function markAsPaid(Order $order)
-{
-    if ($order->status !== 'Completed') {
+    {
+        if ($order->status !== 'Completed') {
+            return response()->json([
+                'error' => 'Order must be completed before marking as paid.'
+            ], 422);
+        }
+
+        $order->update([
+            'payment_status' => 'paid',
+            'is_archived' => true
+        ]);
+
         return response()->json([
-            'error' => 'Order must be completed before marking as paid.'
-        ], 422);
+            'message' => 'Order marked as paid and archived successfully.'
+        ]);
     }
-
-    $order->update([
-        'payment_status' => 'paid',
-        'is_archived' => true
-    ]);
-
-    return response()->json([
-        'message' => 'Order marked as paid and archived successfully.'
-    ]);
-}
-
-    // Removed duplicate archiveOrder method to avoid redeclaration error.
 
     public function archiveOrder($id)
     {
@@ -130,7 +129,6 @@ class OrderController extends Controller
         if (is_array($order->service_type)) {
             $services = implode(', ', $order->service_type);
         } else {
-            // If it's not an array, just use it as a string or handle it differently
             $services = $order->service_type;
         }
         
